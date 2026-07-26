@@ -20,6 +20,18 @@ export const CAMERA_POINTS: THREE.Vector3[] = NODES.map((n, i) => {
   return new THREE.Vector3(n.x + side, n.y + 1.6, n.z + 8.5);
 });
 
+// Portrait phones can't use the side-offset framing: the node would sit
+// off-screen behind the full-width content card. Instead the camera sits
+// directly behind each node, further back, and aims below it — which lifts
+// the pod into the upper third of the screen, above the content.
+export const MOBILE_CAMERA_POINTS: THREE.Vector3[] = NODES.map((n, i) =>
+  i === 0
+    ? new THREE.Vector3(0, 0.4, 12)
+    : new THREE.Vector3(n.x, n.y + 0.6, n.z + 11)
+);
+
+export const MOBILE_LOOK_OFFSET = new THREE.Vector3(0, -3.2, 0);
+
 // The Kafka event bus curve threads through every node.
 export const BUS_CURVE = new THREE.CatmullRomCurve3(
   NODES.map((n) => n.clone()),

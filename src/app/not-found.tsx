@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <main className="relative flex min-h-screen flex-col items-center justify-center px-6 text-center">
+    <main className="relative flex min-h-[100dvh] flex-col items-center justify-center px-6 text-center">
       <div className="fallback-grid absolute inset-0" />
       <div className="relative">
         <p className="font-mono text-xs tracking-[0.3em] text-neon">

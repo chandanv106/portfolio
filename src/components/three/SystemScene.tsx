@@ -15,8 +15,9 @@ type Props = {
   progressRef: React.RefObject<number>;
   mouseRef: React.RefObject<{ x: number; y: number }>;
   activeIndex: number;
-  // "low" trims particle counts, resolution, and effects for tablets/weaker GPUs
-  quality?: "high" | "low";
+  // "low" trims counts/resolution for tablets; "mobile" also switches to
+  // head-on camera framing and drops the heaviest fill-rate effects.
+  quality?: "high" | "low" | "mobile";
 };
 
 // The full "living distributed system" — rendered fixed behind the page.
@@ -26,11 +27,17 @@ export default function SystemScene({
   activeIndex,
   quality = "high",
 }: Props) {
-  const low = quality === "low";
+  const mobile = quality === "mobile";
+  const low = quality !== "high";
   return (
     <Canvas
       dpr={low ? 1 : [1, 1.5]}
-      camera={{ fov: 55, near: 0.1, far: 160, position: [0, 1.2, 10.5] }}
+      camera={{
+        fov: mobile ? 68 : 55,
+        near: 0.1,
+        far: 160,
+        position: mobile ? [0, 0.4, 12] : [0, 1.2, 10.5],
+      }}
       gl={{ antialias: !low, powerPreference: "high-performance" }}
       style={{ position: "fixed", inset: 0, zIndex: 0 }}
     >
@@ -44,23 +51,26 @@ export default function SystemScene({
       <Stars
         radius={130}
         depth={90}
-        count={low ? 1400 : 2800}
+        count={mobile ? 700 : low ? 1400 : 2800}
         factor={3.2}
         saturation={0}
         fade
         speed={0.5}
       />
-      <Grid
-        position={[0, -7, -46]}
-        args={[240, 240]}
-        cellSize={2.2}
-        sectionSize={11}
-        cellColor="#0e2233"
-        sectionColor="#12455c"
-        fadeDistance={90}
-        fadeStrength={2.5}
-        infiniteGrid
-      />
+      {/* the infinite grid is fill-rate heavy — skip it on phone GPUs */}
+      {!mobile && (
+        <Grid
+          position={[0, -7, -46]}
+          args={[240, 240]}
+          cellSize={2.2}
+          sectionSize={11}
+          cellColor="#0e2233"
+          sectionColor="#12455c"
+          fadeDistance={90}
+          fadeStrength={2.5}
+          infiniteGrid
+        />
+      )}
 
       <Gateway position={NODES[0]} active={activeIndex === 0} />
       {sections.slice(1).map((s, i) => (
@@ -74,14 +84,14 @@ export default function SystemScene({
         />
       ))}
 
-      <EventBus count={low ? 45 : 90} />
+      <EventBus count={mobile ? 28 : low ? 45 : 90} />
 
       {/* databases hang off the project and contact services */}
       <DataStore position={[-11.5, -1, -52]} seed={1} />
       <DataStore position={[10.5, 3, -66]} seed={2} />
       <DataStore position={[3.5, -2.5, -90]} seed={3} />
 
-      <CameraRig progressRef={progressRef} mouseRef={mouseRef} />
+      <CameraRig progressRef={progressRef} mouseRef={mouseRef} mobile={mobile} />
 
       {low ? (
         <EffectComposer>

@@ -29,9 +29,12 @@ export default function Shell({
       : "justify-center";
 
   return (
+    // 100dvh, not 100vh: iOS Safari's collapsing address bar makes vh jump.
+    // On phones the card is bottom-aligned with top padding, leaving the
+    // upper third clear so the section's 3D pod stays visible above it.
     <section
       id={id}
-      className="relative z-10 flex min-h-screen items-center px-4 py-28 sm:px-6"
+      className="relative z-10 flex min-h-[100dvh] items-end px-4 pb-12 pt-36 sm:items-center sm:px-6 sm:py-28"
     >
       <div className={`mx-auto flex w-full max-w-6xl ${justify}`}>
         <motion.div

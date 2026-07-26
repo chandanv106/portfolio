@@ -18,7 +18,7 @@ const SystemScene = dynamic(() => import("./three/SystemScene"), {
 });
 
 type Mode = "loading" | "3d" | "2d";
-type Quality = "high" | "low";
+type Quality = "high" | "low" | "mobile";
 
 function supportsWebGL(): boolean {
   try {
@@ -41,18 +41,19 @@ export default function PortfolioApp() {
   const mouseRef = useRef({ x: 0, y: 0 });
   const activeRef = useRef(0);
 
-  // Decide 3D vs 2D once on mount: phones and reduced-motion visitors get
-  // the lightweight 2D version; tablets get 3D at reduced quality.
+  // Decide 3D vs 2D once on mount. Phones do get the 3D scene — just with
+  // head-on camera framing and trimmed effects. Only reduced-motion or
+  // no-WebGL visitors fall back to the 2D version.
   useEffect(() => {
-    const smallScreen = window.matchMedia("(max-width: 767px)").matches;
+    const phone = window.matchMedia("(max-width: 767px)").matches;
     const reducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
     ).matches;
     const lowPower =
       window.matchMedia("(max-width: 1100px)").matches ||
       (navigator.hardwareConcurrency ?? 8) <= 4;
-    setQuality(lowPower ? "low" : "high");
-    setMode(!smallScreen && !reducedMotion && supportsWebGL() ? "3d" : "2d");
+    setQuality(phone ? "mobile" : lowPower ? "low" : "high");
+    setMode(!reducedMotion && supportsWebGL() ? "3d" : "2d");
   }, []);
 
   // Scroll progress (0..1 across the whole document) drives the camera.
