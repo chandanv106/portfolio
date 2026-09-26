@@ -1,9 +1,10 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { gsap } from "@/lib/gsap";
 import { prefersReducedMotion, REDUCED_MOTION, useMediaQuery, useWebGL } from "@/lib/hooks";
+import { onReveal } from "@/lib/reveal";
 import { profile } from "@/data/profile";
 import { SplitText } from "@/components/motion/SplitText";
 import { Magnetic } from "@/components/motion/Magnetic";
@@ -13,14 +14,38 @@ import { Arrow, Roll } from "@/components/ui/Arrow";
 
 const HeroScene = dynamic(() => import("./HeroScene"), { ssr: false });
 
+// How long the particles hold each shape before moving on, in ms.
+const HOLD = 5600;
+
 export function Hero() {
   const section = useRef<HTMLElement>(null);
   const visual = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(true);
+  const [ready, setReady] = useState(false);
+  const [shape, setShape] = useState(0);
 
   const webgl = useWebGL();
   const reduced = useMediaQuery(REDUCED_MOTION);
   const mobile = useMediaQuery("(max-width: 767px)");
+  const animated = webgl === true && !reduced;
+  const crafts = profile.crafts;
+
+  const next = useCallback(() => setShape((s) => (s + 1) % crafts.length), [crafts.length]);
+
+  useEffect(
+    () =>
+      onReveal(() => {
+        setReady(true);
+      }),
+    []
+  );
+
+  // Move on to the next shape every few seconds while the hero is on screen.
+  useEffect(() => {
+    if (!ready || !active || !animated) return;
+    const id = setTimeout(next, HOLD);
+    return () => clearTimeout(id);
+  }, [ready, active, animated, shape, next]);
 
   // Stop rendering the 3D scene once the hero is off screen.
   useEffect(() => {
@@ -31,7 +56,7 @@ export function Hero() {
     return () => io.disconnect();
   }, []);
 
-  // Scrolling away pulls the two name lines apart and sinks the chrome.
+  // Scrolling away pulls the two name lines apart and sinks the particles.
   useEffect(() => {
     const el = section.current;
     if (!el || prefersReducedMotion()) return;
@@ -47,26 +72,54 @@ export function Hero() {
 
   return (
     <section ref={section} id="top" className="relative isolate flex h-[100svh] min-h-[620px] flex-col overflow-hidden">
-      {/* soft coloured light behind the chrome */}
+      {/* soft coloured light behind the particles */}
       <div className="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(60%_50%_at_68%_45%,rgba(255,107,44,0.16),transparent_70%),radial-gradient(40%_40%_at_20%_80%,rgba(79,123,255,0.10),transparent_70%)]" />
 
       <div ref={visual} className="absolute inset-0 -z-10">
-        {webgl === true && !reduced ? (
+        {animated ? (
           <div className="absolute inset-0 animate-[fade-in_1.6s_ease_both]">
-            <HeroScene active={active} mobile={mobile} />
+            <HeroScene active={active} mobile={mobile} shape={shape} onNext={next} />
           </div>
         ) : webgl === false || reduced ? (
-          <div className="absolute left-1/2 top-[42%] size-[70vmin] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle_at_35%_30%,#fff_0%,#ffd9c7_12%,#ff6b2c_38%,#6b2cff_70%,transparent_72%)] opacity-80 blur-[2px] md:left-[62%]" />
+          // Still fallback: a halftone globe of dots.
+          <div
+            className="absolute left-1/2 top-[40%] size-[64vmin] -translate-x-1/2 -translate-y-1/2 rounded-full md:left-[68%] md:top-1/2"
+            style={{
+              backgroundImage: "radial-gradient(circle, rgba(244,242,238,0.85) 1.3px, transparent 1.9px)",
+              backgroundSize: "12px 12px",
+              maskImage: "radial-gradient(circle at 38% 34%, #000 0%, rgba(0,0,0,0.6) 42%, transparent 71%)",
+              WebkitMaskImage: "radial-gradient(circle at 38% 34%, #000 0%, rgba(0,0,0,0.6) 42%, transparent 71%)",
+            }}
+          />
         ) : null}
       </div>
 
       <div className="gutter relative flex flex-1 flex-col pb-7 pt-24 md:pb-10 md:pt-28">
         <div data-fade className="flex items-start justify-between gap-6">
-          <p data-reveal className="label max-w-[14rem] leading-relaxed text-paper/70" style={{ "--d": "0.35s" } as React.CSSProperties}>
-            {profile.role}
-            <br />
-            <span className="text-mute">Backend · Web · Mobile</span>
-          </p>
+          <div data-reveal className="label leading-relaxed text-paper/70" style={{ "--d": "0.35s" } as React.CSSProperties}>
+            <p>{profile.role}</p>
+            {animated ? (
+              // Names the shape the particles are showing; click for the next one.
+              <button
+                type="button"
+                onClick={next}
+                aria-label={`Building ${crafts[shape]}. Show the next one.`}
+                className="group flex items-center gap-2 text-left uppercase text-mute transition-colors hover:text-paper"
+              >
+                <span className="hidden sm:inline">Building</span>
+                <span className="overflow-hidden text-accent">
+                  <span key={shape} className="block animate-[craft-in_0.8s_var(--ease-expo)_both]">
+                    {crafts[shape]}
+                  </span>
+                </span>
+                <span aria-hidden="true" className="inline-block transition-transform duration-500 group-hover:rotate-180">
+                  ↻
+                </span>
+              </button>
+            ) : (
+              <p className="text-mute">Backend · Web · Mobile</p>
+            )}
+          </div>
           <p data-reveal className="label text-right leading-relaxed text-paper/70" style={{ "--d": "0.45s" } as React.CSSProperties}>
             {profile.location}
             <br />

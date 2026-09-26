@@ -7,12 +7,13 @@ export const profile = {
   role: "Software Engineer",
   location: "Hyderabad, India",
   timeZone: "Asia/Kolkata",
-  email: "chandanv016@gmail.com",
+  email: "chandan@hooksend.in",
   linkedin: "https://www.linkedin.com/in/chandan-verma016",
   github: "https://github.com/chandanv106",
   resumeUrl: "/ChandanVerma_Resume.pdf",
   siteUrl: "https://chandanverma.vercel.app",
-  // Rotates under the name in the hero.
+  // Shown in the hero in step with the particle shapes, in this order:
+  // phone, dashboard, database, globe.
   crafts: ["mobile apps", "SaaS products", "backend systems", "real-time apps"],
   tagline:
     "I design, build and ship complete products: mobile apps, SaaS platforms and the backends that run them.",

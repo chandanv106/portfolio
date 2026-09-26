@@ -4,9 +4,10 @@ Live at [chandanverma.vercel.app](https://chandanverma.vercel.app).
 
 A dark, motion-heavy portfolio that works the same on phones and desktops:
 
-- **Liquid-chrome hero** — a WebGL blob (React Three Fiber) that ripples, bulges
-  toward your cursor or finger, and tilts with an Android phone. The name above
-  it inverts wherever the chrome passes behind.
+- **Particle hero** — thousands of glowing points (React Three Fiber) that
+  assemble into a phone, a SaaS dashboard, a database and a globe in turn. They
+  scatter away from your cursor or finger and spring back; a click bursts them
+  into the next shape. The name inverts wherever the particles pass behind.
 - **Custom cursor** (mouse/trackpad only) that morphs over links, project cards
   ("View") and draggable things ("Drag"), plus magnetic buttons.
 - **Smooth scrolling** (Lenis) driving GSAP ScrollTrigger: stacking project

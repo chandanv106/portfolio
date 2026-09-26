@@ -382,3 +382,8 @@ html.seen .preloader {
 @keyframes flow-dash {
   to { stroke-dashoffset: -48; }
 }
+
+@keyframes craft-in {
+  from { transform: translateY(105%); }
+  to { transform: none; }
+}
