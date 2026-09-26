@@ -1,7 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="8" fill="#050510"/>
-  <!-- hexagonal service pod -->
-  <polygon points="32,10 50,21 50,43 32,54 14,43 14,21" fill="none" stroke="#22d3ee" stroke-width="3"/>
-  <polygon points="32,22 41,27.5 41,38.5 32,44 23,38.5 23,27.5" fill="#22d3ee" opacity="0.9"/>
-  <circle cx="32" cy="32" r="2.5" fill="#050510"/>
+  <defs>
+    <radialGradient id="g" cx="35%" cy="30%" r="75%">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.35" stop-color="#ffb08a"/>
+      <stop offset="0.75" stop-color="#ff6b2c"/>
+      <stop offset="1" stop-color="#b8431a"/>
+    </radialGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="#0b0b0d"/>
+  <circle cx="32" cy="32" r="18" fill="url(#g)"/>
 </svg>

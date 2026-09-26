@@ -1,172 +1,384 @@
 @import "tailwindcss";
+@import "lenis/dist/lenis.css";
 
-:root {
-  --bg: #050510;
-  --panel: rgba(9, 13, 28, 0.78);
-  --panel-solid: #0a0e1d;
-  --line: rgba(103, 232, 249, 0.14);
-  --line-strong: rgba(103, 232, 249, 0.35);
-  --neon: #22d3ee;
-  --neon-soft: #67e8f9;
-  --violet: #a78bfa;
-  --fg: #e6edf7;
-  --muted: #8b97ad;
-  --ok: #34d399;
+@theme {
+  --color-ink: #0b0b0d;
+  --color-ink-2: #121216;
+  --color-ink-3: #1b1b21;
+  --color-paper: #f4f2ee;
+  --color-mute: #8e8e98;
+  --color-line: rgb(255 255 255 / 0.1);
+  --color-accent: #ff6b2c;
+
+  --ease-expo: cubic-bezier(0.19, 1, 0.22, 1);
+  --ease-quart: cubic-bezier(0.76, 0, 0.24, 1);
 }
 
 @theme inline {
-  --color-bg: var(--bg);
-  --color-panel: var(--panel);
-  --color-panel-solid: var(--panel-solid);
-  --color-line: var(--line);
-  --color-line-strong: var(--line-strong);
-  --color-neon: var(--neon);
-  --color-neon-soft: var(--neon-soft);
-  --color-violet: var(--violet);
-  --color-fg: var(--fg);
-  --color-muted: var(--muted);
-  --color-ok: var(--ok);
-  --font-sans: var(--font-grotesk), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+  --font-display: var(--font-display-face), "Arial Narrow", ui-sans-serif, sans-serif;
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "SFMono-Regular", monospace;
+}
+
+@utility gutter {
+  padding-inline: clamp(1.25rem, 4vw, 3.5rem);
+}
+
+@utility label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
 html {
-  scroll-behavior: smooth;
+  background: var(--color-ink);
+  color: var(--color-paper);
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
-  background: var(--bg);
-  color: var(--fg);
-  font-family: var(--font-grotesk), ui-sans-serif, system-ui, sans-serif;
-  overflow-x: hidden;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: clip;
+  text-rendering: optimizeLegibility;
 }
 
 ::selection {
-  background: rgba(34, 211, 238, 0.35);
-  color: #fff;
+  background: var(--color-accent);
+  color: var(--color-ink);
 }
 
-/* Slim neon scrollbar */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* The custom cursor replaces the system one on mouse/trackpad devices. */
+html.has-cursor,
+html.has-cursor * {
+  cursor: none !important;
+}
+
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--bg);
+  background: var(--color-ink);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(103, 232, 249, 0.25);
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(103, 232, 249, 0.5);
+  background: #2a2a31;
+  border-radius: 8px;
 }
 
-/* Panel card used by all section content */
-.panel {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+/* ------------------------------------------------------------------ */
+/* Reveal system. `.js` is set before first paint, so content is only  */
+/* hidden when JavaScript can reveal it. RevealObserver adds `.is-in`. */
+/* ------------------------------------------------------------------ */
+
+.js [data-reveal] {
+  opacity: 0;
+  transform: translate3d(0, 48px, 0);
+  transition:
+    opacity 1s var(--ease-expo),
+    transform 1.3s var(--ease-expo);
+  transition-delay: var(--d, 0s);
+}
+.js [data-reveal="fade"] {
+  transform: none;
+}
+.js [data-reveal="scale"] {
+  transform: scale(0.94);
+}
+.js [data-reveal="clip"] {
+  opacity: 1;
+  transform: none;
+  clip-path: inset(100% 0 0 0 round 24px);
+  transition: clip-path 1.4s var(--ease-quart);
+  transition-delay: var(--d, 0s);
+}
+.js [data-reveal].is-in {
+  opacity: 1;
+  transform: none;
+}
+.js [data-reveal="clip"].is-in {
+  clip-path: inset(0 0 0 0 round 24px);
+}
+
+/* Split text: every character rises out of its word's mask. */
+.split-word {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
+  white-space: nowrap;
+}
+.split-char {
+  display: inline-block;
+  will-change: transform;
+}
+.js [data-split] .split-char {
+  transform: translate3d(0, 110%, 0) rotate(6deg);
+  transition: transform 1.2s var(--ease-expo);
+  transition-delay: calc(var(--d, 0s) + var(--i, 0) * 0.028s);
+}
+.js [data-split].is-in .split-char {
+  transform: none;
+}
+
+/* Line-by-line word rise for sub-headings. */
+.js [data-words] .split-char {
+  transform: translate3d(0, 105%, 0);
+  transition: transform 1s var(--ease-expo);
+  transition-delay: calc(var(--d, 0s) + var(--i, 0) * 0.045s);
+}
+.js [data-words].is-in .split-char {
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .js [data-reveal],
+  .js [data-split] .split-char,
+  .js [data-words] .split-char {
+    opacity: 1 !important;
+    transform: none !important;
+    clip-path: none !important;
+    transition: none !important;
+  }
+  .preloader {
+    display: none !important;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Film grain over everything, very faint.                             */
+/* ------------------------------------------------------------------ */
+.grain {
+  position: fixed;
+  inset: -50%;
+  z-index: 150;
+  pointer-events: none;
+  opacity: 0.07;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  animation: grain 0.9s steps(6) infinite;
+}
+@keyframes grain {
+  0% { transform: translate(0, 0); }
+  20% { transform: translate(-3%, 2%); }
+  40% { transform: translate(2%, -3%); }
+  60% { transform: translate(-2%, -1%); }
+  80% { transform: translate(3%, 3%); }
+  100% { transform: translate(0, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .grain { animation: none; }
+}
+
+/* Repeat visits in the same session skip the preloader (set before paint). */
+html.seen .preloader {
+  display: none;
+}
+
+/* ------------------------------------------------------------------ */
+/* Small shared pieces                                                  */
+/* ------------------------------------------------------------------ */
+
+/* Text that rolls up to a copy of itself on hover. */
+.roll {
   position: relative;
+  display: inline-flex;
+  overflow: hidden;
+  vertical-align: top;
+}
+.roll > span {
+  display: block;
+  transition: transform 0.6s var(--ease-expo);
+}
+.roll > span + span {
+  position: absolute;
+  inset: 0;
+  transform: translateY(105%);
+}
+.roll-host:hover .roll > span:first-child,
+.roll-host:focus-visible .roll > span:first-child {
+  transform: translateY(-105%);
+}
+.roll-host:hover .roll > span + span,
+.roll-host:focus-visible .roll > span + span {
+  transform: translateY(0);
 }
 
-/* Neon corner accents on panels */
-.panel::before,
-.panel::after {
+/* Blinking "live" dot. */
+.pulse-dot {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: #3ddc84;
+}
+.pulse-dot::after {
   content: "";
   position: absolute;
-  width: 14px;
-  height: 14px;
+  inset: 0;
+  border-radius: inherit;
+  background: inherit;
+  animation: pulse 2s var(--ease-expo) infinite;
+}
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(3.2); opacity: 0; }
+}
+
+/* Outlined display text. */
+.text-outline {
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--stroke, var(--color-paper));
+}
+
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+
+/* ------------------------------------------------------------------ */
+/* Custom cursor                                                        */
+/* ------------------------------------------------------------------ */
+.cursor {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
   pointer-events: none;
+  mix-blend-mode: difference;
+  transition: opacity 0.3s ease;
 }
-.panel::before {
-  top: -1px;
-  left: -1px;
-  border-top: 1px solid var(--neon);
-  border-left: 1px solid var(--neon);
+.cursor[data-visible="false"],
+.cursor[data-state="hide"] {
+  opacity: 0;
 }
-.panel::after {
-  bottom: -1px;
-  right: -1px;
-  border-bottom: 1px solid var(--neon);
-  border-right: 1px solid var(--neon);
+.cursor[data-state="view"],
+.cursor[data-state="drag"] {
+  mix-blend-mode: normal;
 }
-
-.service-tag {
-  font-family: var(--font-jetbrains), monospace;
-  font-size: 0.7rem;
-  letter-spacing: 0.12em;
-  text-transform: lowercase;
-  color: var(--neon);
-  border: 1px solid var(--line-strong);
-  padding: 0.2rem 0.6rem;
-  border-radius: 2px;
-  background: rgba(34, 211, 238, 0.06);
+.cursor-ring,
+.cursor-dot {
+  position: absolute;
+  left: 0;
+  top: 0;
+  will-change: transform;
 }
-
-.status-dot {
-  width: 7px;
-  height: 7px;
+.cursor-ring-inner {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1.5px solid #fff;
   border-radius: 9999px;
-  background: var(--ok);
-  box-shadow: 0 0 8px var(--ok);
-  animation: pulse-dot 2s ease-in-out infinite;
+  transform: translate(-50%, -50%);
+  transition:
+    width 0.5s var(--ease-expo),
+    height 0.5s var(--ease-expo),
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    transform 0.3s var(--ease-expo);
 }
-
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
-
-.blink-caret {
-  animation: blink 1.1s steps(1) infinite;
-}
-@keyframes blink {
-  50% { opacity: 0; }
-}
-
-/* Label chips rendered inside the 3D canvas (drei Html) */
-.pod-label {
-  font-family: var(--font-jetbrains), monospace;
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  color: var(--neon-soft);
-  background: rgba(5, 5, 16, 0.72);
-  border: 1px solid var(--line-strong);
-  padding: 3px 8px;
-  border-radius: 2px;
-  white-space: nowrap;
-  pointer-events: none;
-  user-select: none;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.pod-label .dot {
-  width: 5px;
-  height: 5px;
+.cursor-dot-inner {
+  width: 6px;
+  height: 6px;
   border-radius: 9999px;
-  background: var(--ok);
-  box-shadow: 0 0 6px var(--ok);
+  background: #fff;
+  transform: translate(-50%, -50%);
+  transition: transform 0.3s var(--ease-expo), opacity 0.2s ease;
 }
-.pod-label.dim {
-  opacity: 0.55;
+.cursor[data-state="link"] .cursor-ring-inner {
+  width: 72px;
+  height: 72px;
+  background: #fff;
+}
+.cursor[data-state="view"] .cursor-ring-inner,
+.cursor[data-state="drag"] .cursor-ring-inner {
+  width: 104px;
+  height: 104px;
+  background: var(--color-accent);
+  border-color: transparent;
+}
+.cursor[data-state="link"] .cursor-dot-inner,
+.cursor[data-state="view"] .cursor-dot-inner,
+.cursor[data-state="drag"] .cursor-dot-inner {
+  transform: translate(-50%, -50%) scale(0);
+}
+.cursor[data-down="true"] .cursor-ring-inner {
+  transform: translate(-50%, -50%) scale(0.82);
+}
+.cursor-label {
+  font: 700 13px/1 var(--font-sans);
+  letter-spacing: 0.01em;
+  color: var(--color-ink);
+  opacity: 0;
+  transform: scale(0.5);
+  transition: opacity 0.25s ease, transform 0.45s var(--ease-expo);
+}
+.cursor[data-state="view"] .cursor-label,
+.cursor[data-state="drag"] .cursor-label {
+  opacity: 1;
+  transform: none;
 }
 
-/* Animated grid backdrop for the 2D fallback */
-.fallback-grid {
-  background-image:
-    linear-gradient(rgba(103, 232, 249, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(103, 232, 249, 0.06) 1px, transparent 1px);
-  background-size: 44px 44px;
-  mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 30%, transparent 75%);
-  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 30%, transparent 75%);
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes scroll-cue {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(200%); }
+}
+
+/* ------------------------------------------------------------------ */
+/* Project illustrations                                                */
+/* ------------------------------------------------------------------ */
+@keyframes hs-comment {
+  0%, 8% { opacity: 0; transform: translateY(8px); }
+  14%, 88% { opacity: 1; transform: none; }
+  96%, 100% { opacity: 0; transform: none; }
+}
+@keyframes hs-dm {
+  0%, 28% { opacity: 0; transform: translateY(18px) scale(0.96); }
+  36%, 88% { opacity: 1; transform: none; }
+  96%, 100% { opacity: 0; transform: translateY(-8px); }
+}
+@keyframes fleet-log {
+  to { transform: translateY(-50%); }
+}
+@keyframes crm-row {
+  0%, 4% { opacity: 0; transform: translateX(-10px); }
+  12%, 90% { opacity: 1; transform: none; }
+  100% { opacity: 0; transform: none; }
+}
+@keyframes tel-step {
+  0%, 5% { transform: scaleX(0); }
+  15%, 92% { transform: scaleX(1); }
+  100% { transform: scaleX(0); }
+}
+@keyframes tel-scan {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(320%); }
+}
+@keyframes tel-plan {
+  0%, 18% { opacity: 0; transform: translateY(10px); }
+  28%, 90% { opacity: 1; transform: none; }
+  100% { opacity: 0; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [class*="animate-["] {
+    animation: none !important;
+  }
 }
 
 @keyframes flow-dash {
-  to { stroke-dashoffset: -24; }
-}
-.flow-line {
-  stroke-dasharray: 4 8;
-  animation: flow-dash 1.2s linear infinite;
+  to { stroke-dashoffset: -48; }
 }
